@@ -50,7 +50,7 @@ import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.platform.IDiagramEditor;
+import org.eclipse.graphiti.platform.IDiagramBehavior;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DefaultPaletteBehavior;
 import org.eclipse.graphiti.ui.editor.DefaultPersistencyBehavior;
@@ -59,8 +59,8 @@ import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.editor.IDiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.config.ConfigurationProvider;
-import org.eclipse.graphiti.ui.internal.config.IConfigurationProvider;
 import org.eclipse.graphiti.ui.internal.util.gef.ScalableRootEditPartAnimated;
+import org.eclipse.graphiti.ui.platform.IConfigurationProvider;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
@@ -123,7 +123,9 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	private IEditorInput editorInput;
 
 	private IProject container;
+	@SuppressWarnings("unused")
 	private IFile camelContextFile;
+	@SuppressWarnings("unused")
 	private RouteContainer model;
 	private RouteSupport activeRoute;
 	private CamelModelChangeListener camelModelListener;
@@ -178,9 +180,9 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 
 	private Composite parent;
 
-	public static RiderDesignEditor toRiderDesignEditor(IDiagramEditor editor) {
-		if (editor instanceof RiderDesignEditor) {
-			return (RiderDesignEditor) editor;
+	public static RiderDesignEditor toRiderDesignEditor(IDiagramBehavior behavior) {
+		if (behavior instanceof RiderDesignEditor) {
+			return (RiderDesignEditor) behavior;
 		}
 		return null;
 	}
@@ -196,7 +198,7 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 		if (diagramTypeProvider == null) {
 			return null;
 		}
-		return toRiderDesignEditor(diagramTypeProvider.getDiagramEditor());
+		return toRiderDesignEditor(diagramTypeProvider.getDiagramBehavior());
 	}
 
 	public RiderDesignEditor(RiderEditor parent) {
@@ -208,7 +210,6 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	/* (non-Javadoc)
 	 * @see org.eclipse.graphiti.ui.editor.DiagramEditor#createUpdateBehavior()
 	 */
-	@Override
 	protected synchronized DefaultUpdateBehavior createUpdateBehavior() {
 		if (this.camelUpdateBehaviour == null) {
 			this.camelUpdateBehaviour = new CamelUpdateBehaviour(this);
@@ -216,7 +217,6 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 		return this.camelUpdateBehaviour;
 	}
 	
-	@Override
 	protected synchronized DefaultPersistencyBehavior createPersistencyBehavior() {
 		if (this.camelPersistencyBehaviour == null) {
 			this.camelPersistencyBehaviour = new CamelPersistencyBehaviour(this);
@@ -227,7 +227,6 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
     /* (non-Javadoc)
 	 * @see org.eclipse.graphiti.ui.editor.DiagramEditor#registerBusinessObjectsListener()
 	 */
-	@Override
 	protected void registerBusinessObjectsListener() {
 		//super.registerBusinessObjectsListener();
 		camelModelListener = new CamelModelChangeListener(this);
@@ -248,11 +247,15 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 		setPartName(input.getName());
 
 		super.setInput(input);
-
+		
         if (data.loadModelOnSetInput) {
 			loadModelFromInput(input);
 		}
-
+        
+	    if (activeConfig.diagram == null)
+	        // Create the diagram and its file
+	        activeConfig.diagram = Graphiti.getPeCreateService().createDiagram("CamelContext", "CamelContext", true); //$NON-NLS-1$
+	        
         initializeDiagram(activeConfig.diagram);
 		
 		getEditingDomain().getCommandStack().flush();
@@ -272,9 +275,12 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	
 	private void initializeDiagram(Diagram diagram) {
 	    // set the diagram on the container
-	    if (getDiagramTypeProvider().getDiagram() != diagram) {
-	        getDiagramTypeProvider().resourceReloaded(activeConfig.diagram);
-	    }
+		IDiagramTypeProvider diagramTypeProvider = getDiagramTypeProvider();
+		if (diagramTypeProvider == null)
+			return;
+		
+	    if (diagramTypeProvider.getDiagram() != diagram)
+	    	diagramTypeProvider.resourceReloaded(activeConfig.diagram);
 
 	    // add the diagram contents
         getEditingDomain().getCommandStack().execute(new ImportCamelContextElementsCommand(RiderDesignEditor.this, getEditingDomain(), diagram));
@@ -314,7 +320,6 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	/* (non-Javadoc)
 	 * @see org.eclipse.graphiti.ui.editor.DiagramEditor#createPaletteBehaviour()
 	 */
-	@Override
 	protected synchronized DefaultPaletteBehavior createPaletteBehaviour() {
 		if (this.camelPaletteBehaviour == null) {
 			this.camelPaletteBehaviour = new CamelPaletteBehaviour(this);
@@ -627,11 +632,10 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	}
 	
 	public IConfigurationProvider getConfigurationProvider() {
-		IConfigurationProvider configurationProvider = new ConfigurationProvider(this, getDiagramTypeProvider());
+		IConfigurationProvider configurationProvider = new ConfigurationProvider(getDiagramBehavior(), getDiagramTypeProvider());
 		return configurationProvider;
 	}
 
-	@Override
 	protected ContextMenuProvider createContextMenuProvider() {
 		return new CamelDiagramEditorContextMenuProvider(getGraphicalViewer(), getActionRegistry(), getConfigurationProvider());
 	}
@@ -649,6 +653,7 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 			 * (non-Javadoc)
 			 * @see org.eclipse.gef.dnd.TemplateTransferDropTargetListener#getFactory(java.lang.Object)
 			 */
+			@SuppressWarnings("rawtypes")
 			@Override
 			protected CreationFactory getFactory(final Object template) {
 				if (template instanceof CreationFactory) {
@@ -698,7 +703,11 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 		} else if (type == ActionRegistry.class) {
 			return getActionRegistry();
 		} else if (type == ZoomManager.class) {
-			RootEditPart root = getGraphicalViewer().getRootEditPart();
+			GraphicalViewer graphicalViewer = getGraphicalViewer();
+			if (graphicalViewer == null)
+				return null;
+			
+			RootEditPart root = graphicalViewer.getRootEditPart();
 			if (root instanceof ScalableRootEditPartAnimated) {
 				ScalableRootEditPartAnimated scalableRoot = (ScalableRootEditPartAnimated) root;
 				return scalableRoot.getZoomManager();
@@ -719,7 +728,7 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	 * initializeGraphicalViewer()
 	 */
 	@Override
-	protected void initializeGraphicalViewer() {
+	public void initializeGraphicalViewer() {
 		super.initializeGraphicalViewer();
 		GraphicalViewer viewer = getGraphicalViewer();
 
@@ -820,7 +829,7 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	 */
 	public void update() {
 		DiagramOperations.updateDiagram(RiderDesignEditor.this);
-		refresh();
+		getDiagramBehavior().refresh();
 		if (getDiagram() != null) selectPictogramElements(new PictogramElement[] { getDiagram().getContainer() });
 	}
 
@@ -923,12 +932,12 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 	public void refreshDiagramContents() {
 		initializeDiagramForSelectedRoute();
 		if (activeConfig.diagram != null) {
-	        getRefreshBehavior().initRefresh();
+			getDiagramBehavior().getRefreshBehavior().initRefresh();
 	        setPictogramElementsForSelection(null);
 	        // set Diagram as contents for the graphical viewer and refresh
 	        getGraphicalViewer().setContents(activeConfig.diagram);
 	        
-	        refreshContent();
+	        getDiagramBehavior().refreshContent();
 		}
 	}
 
