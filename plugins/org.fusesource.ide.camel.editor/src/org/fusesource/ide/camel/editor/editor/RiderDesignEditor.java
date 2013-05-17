@@ -934,9 +934,13 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 		if (activeConfig.diagram != null) {
 			getDiagramBehavior().getRefreshBehavior().initRefresh();
 	        setPictogramElementsForSelection(null);
-	        // set Diagram as contents for the graphical viewer and refresh
-	        getGraphicalViewer().setContents(activeConfig.diagram);
+	        GraphicalViewer graphicalViewer = getGraphicalViewer();
 	        
+	        if (graphicalViewer == null)
+	        	return;
+	        
+	        // set Diagram as contents for the graphical viewer and refresh
+	        graphicalViewer.setContents(activeConfig.diagram);	        
 	        getDiagramBehavior().refreshContent();
 		}
 	}
@@ -1031,7 +1035,8 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
 			actionRegistry.dispose();
 		}
 		// important: always call super implementation of dispose
-		super.dispose();
+		if (getDiagramTypeProvider() != null)
+			super.dispose();
 	}
 
 

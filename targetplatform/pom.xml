@@ -31,9 +31,9 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>indigo_dev.target</file>
+									<file>kepler_dev.target</file>
 									<type>target</type>
-									<classifier>indigo_dev</classifier>
+									<classifier>kepler_dev</classifier>
 								</artifact>
 							</artifacts>
 						</configuration>
