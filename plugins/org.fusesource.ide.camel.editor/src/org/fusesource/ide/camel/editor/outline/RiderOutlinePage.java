@@ -265,7 +265,8 @@ public class RiderOutlinePage extends ContentOutlinePage implements INodeViewer,
 	public void dispose() {
 		this.editor.removeModelChangeListener(this);
 		editor.getSelectionSyncer().removeViewer(getViewer());
-		if (editor.getGraphicalViewer().getControl() != null && !editor.getGraphicalViewer().getControl().isDisposed()) {
+		if (editor.getGraphicalViewer() != null && editor.getGraphicalViewer().getControl() != null && 
+			!editor.getGraphicalViewer().getControl().isDisposed()) {
 			editor.getGraphicalViewer().getControl().removeDisposeListener(disposeListener);
 		}
 		super.dispose();

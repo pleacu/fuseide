@@ -251,11 +251,7 @@ public class RiderDesignEditor extends DiagramEditor implements INodeViewer {
         if (data.loadModelOnSetInput) {
 			loadModelFromInput(input);
 		}
-        
-	    if (activeConfig.diagram == null)
-	        // Create the diagram and its file
-	        activeConfig.diagram = Graphiti.getPeCreateService().createDiagram("CamelContext", "CamelContext", true); //$NON-NLS-1$
-	        
+
         initializeDiagram(activeConfig.diagram);
 		
 		getEditingDomain().getCommandStack().flush();
