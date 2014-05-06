@@ -49,7 +49,7 @@ Here's how to setup eclipse...
 
 * create a new workspace for working on Fuse Tooling
 * import the project into eclipse from directory "fuseide" (import... -> general -> existing project)
-* open the Target Platform: org.fusesource.ide.targetplatform/jbtis_4.1_dev.target
+* open the Target Platform: org.fusesource.ide.targetplatform/jbtis_4.2_dev.target
 * wait until all is resolved and then click the "Set as Target Platform" link in the top right
 
 
