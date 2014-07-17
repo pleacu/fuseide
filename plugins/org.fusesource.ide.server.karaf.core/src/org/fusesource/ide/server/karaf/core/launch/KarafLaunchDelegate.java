@@ -28,6 +28,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.sourcelookup.ISourcePathComputer;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.IVMInstall;
@@ -176,17 +177,26 @@ public class KarafLaunchDelegate implements ILaunchConfigurationDelegate {
 		if (manager != null) {
 			ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
 			if (type != null) {
+				ISourcePathComputer spc = type.getSourcePathComputer();
 				String serverId = configuration.getAttribute(ATTR_SERVER_ID, EMPTY_STRING);
 				ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null, serverId);
+				workingCopy.setAttribute(ATTR_SERVER_ID, serverId);
 				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, Collections.EMPTY_LIST));
 				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, EMPTY_STRING));
 				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, EMPTY_STRING));
 				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, true));
 				Map<String, String> vmMap = new HashMap<String, String>(4);
 				vmMap.put(IJavaLaunchConfigurationConstants.ATTR_JAVA_COMMAND, "java");
-				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_INSTALL_TYPE_SPECIFIC_ATTRS_MAP, vmMap);
+				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_INSTALL_TYPE_SPECIFIC_ATTRS_MAP, vmMap);				
 				workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, EMPTY_STRING));
 
+				workingCopy.setAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, configuration.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, EMPTY_STRING));
+				//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, EMPTY_STRING));
+				workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, configuration.getAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, EMPTY_STRING));
+
+				System.out.println("sourceLocator: " + workingCopy.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, EMPTY_STRING));
+				System.out.println("sourcePathProvider: " + workingCopy.getAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, EMPTY_STRING));
+				System.out.println("sourcePathComputer: " + workingCopy.getAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, EMPTY_STRING));
 				ILaunch launch2 = workingCopy.launch(mode, monitor);
 				if (launch2 != null) {
 					//behaviorDelegate.setLaunch(launch2);

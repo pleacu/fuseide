@@ -24,8 +24,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.sourcelookup.ISourcePathComputer;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -144,6 +146,16 @@ public class KarafServerBehaviourDelegate extends ServerBehaviourDelegate {
 			workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, false);
 			workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, classPathList);
 			
+			workingCopy.setAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, "org.fusesource.ide.server.karaf.core.server.sourceLocator");
+			
+			//workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
+			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
+			//workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.eclipse.pde.ui.workbenchClasspathProvider");
+			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.eclipse.pde.ui.workbenchClasspathProvider");
+			workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
+			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
+			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.eclipse.pde.ui.workbenchClasspathProvider");
+			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "sourcePathComputerDelegate");
 			this.wc = workingCopy;
 		}
 	}
