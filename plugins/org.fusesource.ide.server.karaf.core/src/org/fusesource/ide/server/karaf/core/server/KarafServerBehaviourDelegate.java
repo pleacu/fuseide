@@ -33,7 +33,6 @@ import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wst.server.core.IModule;
-import org.eclipse.wst.server.core.IRuntimeWorkingCopy;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.fusesource.ide.server.karaf.core.runtime.IKarafRuntime;
@@ -116,7 +115,6 @@ public class KarafServerBehaviourDelegate extends ServerBehaviourDelegate {
 		}
 		// This is the first time, launch config is set to defaults.
 		IKarafRuntime runtime = null;
-		IRuntimeWorkingCopy rwc = null;
 		if (getServer().getRuntime() == null) {
 			
 		} else {
@@ -147,15 +145,7 @@ public class KarafServerBehaviourDelegate extends ServerBehaviourDelegate {
 			workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, classPathList);
 			
 			workingCopy.setAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, "org.fusesource.ide.server.karaf.core.server.sourceLocator");
-			
-			//workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
-			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
-			//workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.eclipse.pde.ui.workbenchClasspathProvider");
-			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.eclipse.pde.ui.workbenchClasspathProvider");
 			workingCopy.setAttribute(ISourcePathComputer.ATTR_SOURCE_PATH_COMPUTER_ID, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
-			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.fusesource.ide.server.karaf.core.server.sourcePathComputerDelegate");
-			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "org.eclipse.pde.ui.workbenchClasspathProvider");
-			//workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_SOURCE_PATH_PROVIDER, "sourcePathComputerDelegate");
 			this.wc = workingCopy;
 		}
 	}
@@ -270,7 +260,7 @@ public class KarafServerBehaviourDelegate extends ServerBehaviourDelegate {
 	}
 	
 	protected String[] getClassPathEntries(String installPath) {
-		List cp = new ArrayList();
+		List<IRuntimeClasspathEntry> cp = new ArrayList<IRuntimeClasspathEntry>();
 		
 		IPath libPath = new Path(String.format("%s%s%s%s", installPath, SEPARATOR, "lib", SEPARATOR));
 		if (libPath.toFile().exists()) {
@@ -288,7 +278,7 @@ public class KarafServerBehaviourDelegate extends ServerBehaviourDelegate {
 		return entries;
 	}
 	
-	private void findJars(IPath path, List cp) {
+	private void findJars(IPath path, List<IRuntimeClasspathEntry> cp) {
 		File[] libs = path.toFile().listFiles(new FileFilter() {
 			/*
 			 * (non-Javadoc)
