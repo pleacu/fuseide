@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Generated("org.jsonschema2pojo")
+@Generated("org.jboss.tools.locus.jsonschema2pojo")
 @JsonPropertyOrder({
     "custId",
     "priority",
